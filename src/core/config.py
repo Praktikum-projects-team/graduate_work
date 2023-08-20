@@ -36,38 +36,13 @@ class AuthConfig(BaseSettings):
         return f'{self.host}/api/v1/user/profile'
 
 
-class PostgresConfig(BaseSettings):
-    host: str = Field(..., env='POSTGRES_HOST')
-    port: int = Field(..., env='POSTGRES_PORT')
-    user: str = Field(..., env='POSTGRES_USER')
-    password: str = Field(..., env='POSTGRES_PASSWORD')
-    name: str = Field(..., env='POSTGRES_DB')
-
-    @property
-    def url_sync(self):
-        return f'postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}'
-
-    @property
-    def url_async(self):
-        return f'postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}'
-
-
-class RabbitMQConfig(BaseSettings):
-    rm_host: str = Field(..., env='RABBITMQ_HOST')
-    rm_port: int = Field(..., env='RABBITMQ_PORT')
-    rm_user: str = Field(..., env='RABBITMQ_DEFAULT_USER')
-    rm_password: str = Field(..., env='RABBITMQ_DEFAULT_PASS')
-    rm_delivery_mode: int = Field(..., env='RABBITMQ_DELIVERY_MODE')
-    rm_exchange: str = Field(..., env='RABBITMQ_EXCHANGE')
-    rm_instant_queue_name: str = Field(..., env='RABBITMQ_INSTANT_QUEUE')
-    rm_ordinary_queue_name: str = Field(..., env='RABBITMQ_ORDINARY_QUEUE')
-
-    @property
-    def rabbit_connection(self):
-        return f"amqp://{self.rm_user}:{self.rm_password}@{self.rm_host}/"
+class MongoConfig(BaseSettings):
+    host: str = Field(..., env='MONGO_HOST')
+    port: int = Field(..., env='MONGO_PORT')
+    db_name: str = Field(..., env='MONGO_DB_NAME')
+    mongo_url: str = Field(..., env='MONGO_URL')
 
 
 app_config = AppConfig()  # type: ignore[call-arg]
 auth_config = AuthConfig()  # type: ignore[call-arg]
-pg_config = PostgresConfig()  # type: ignore[call-arg]
-rm_config = RabbitMQConfig()  # type: ignore[call-arg]
+mongo_config = MongoConfig()  # type: ignore[call-arg]

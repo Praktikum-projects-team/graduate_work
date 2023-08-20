@@ -35,35 +35,15 @@ services:
     networks:
       - cinema
 
-  rabbitmq:
-    image: rabbitmq:3.10.7-management
-    hostname: rabbitmq
-    restart: always
+  mongodb:
+    container_name: mongodb
+    image: mongo:4.4.6
     env_file:
       - envs/cinema_together/.env
-    volumes:
-      - ./rabbitmq:/var/lib/rabbitmq
     ports:
-      - "15672:15672"
-      - "5672:5672"
-    networks:
-      - cinema
-
-  cinema_postgres:
-    container_name: cinema_postgres
-    image: "postgres:13"
-    env_file:
-      - envs/cinema_together/.env
+      - "27017:27017"
     volumes:
-      - $HOME/postgresql/cinema_data:/var/lib/postgresql/cinema_api_data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U app -d cinema_db" ]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    restart: always
-    ports:
-      - "5432:5432"
+      - mo_data:/mo_data
     networks:
       - cinema
 
@@ -72,13 +52,10 @@ services:
     build: .
     env_file:
       - envs/cinema_together/.env
-    volumes:
-      - $HOME/postgresql/cinema_data:/var/lib/postgresql/cinema_api_data
     ports:
       - "8001:8001"
     depends_on:
-      cinema_postgres:
-        condition: service_healthy
+      - mongodb
     networks:
       - cinema
 
@@ -95,6 +72,8 @@ services:
     networks:
       - cinema
 
+volumes:
+  mo_data:
 
 networks:
   cinema:

@@ -19,3 +19,5 @@ psycopg2-binary==2.9.6
 asyncpg==0.28.0
 aio-pika==9.2.0
 requests==2.31.0
+pymongo==4.4.1
+motor==3.2.0
