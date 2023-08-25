@@ -43,6 +43,24 @@ class MongoConfig(BaseSettings):
     mongo_url: str = Field(..., env='MONGO_URL')
 
 
+class UGCConfig(BaseSettings):
+    host: str = Field(..., env='UGC_HOST')
+
+    @property
+    def url_bookmarks(self):
+        return f'{self.host}/internal/bookmarks'
+
+
+class FriendsConfig(BaseSettings):
+    host: str = Field(..., env='FRIEND_HOST')
+
+    @property
+    def url_friends_list(self):
+        return f'{self.host}/api/v1/friends'
+
+
 app_config = AppConfig()  # type: ignore[call-arg]
 auth_config = AuthConfig()  # type: ignore[call-arg]
 mongo_config = MongoConfig()  # type: ignore[call-arg]
+ugc_config = UGCConfig()  # type: ignore[call-arg]
+friends_config = FriendsConfig()  # type: ignore[call-arg]

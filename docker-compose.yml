@@ -35,8 +35,8 @@ services:
     networks:
       - cinema
 
-  mongodb:
-    container_name: mongodb
+  cinema_mongodb:
+    container_name: cinema_mongodb
     image: mongo:4.4.6
     env_file:
       - envs/cinema_together/.env
@@ -53,9 +53,9 @@ services:
     env_file:
       - envs/cinema_together/.env
     ports:
-      - "8001:8001"
+      - "8002:8002"
     depends_on:
-      - mongodb
+      - cinema_mongodb
     networks:
       - cinema
 
