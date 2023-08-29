@@ -16,20 +16,20 @@ router = APIRouter()
 async def room_wesoket(
     *,
     room_id: str,
-    # token: str = Query(...),
+    token: str = Query(...),
     websocket: WebSocket,
-    # auth_api: AuthApi = Depends(get_auth_api),
+    auth_api: AuthApi = Depends(get_auth_api),
     connection_manager: ConnectionManager = Depends(get_connection_manager),
     room_service: RoomService = Depends(get_room_service),
 ):
     """Вебсокет комнаты"""
 
-    # await auth_api.check_token(token)
-    # token_payload = decode_jwt(token)
-    # if token_payload is None:
-    #     raise HTTPException(status.HTTP_401_UNAUTHORIZED, 'Invalid token')
+    await auth_api.check_token(token)
+    token_payload = decode_jwt(token)
+    if token_payload is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, 'Invalid token')
 
-    # user_id = UUID(token_payload['user_id'])
+    user_id = UUID(token_payload['id'])
     room = await room_service.get(room_id)
     if room is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f'Room {room_id} not found')
@@ -39,7 +39,7 @@ async def room_wesoket(
         async for json_data in websocket.iter_json():
             try:
                 message = core_models.parse_message(json_data)
-                await room_service.handle_message(room, room.creator_id, message) # TODO: user_id из токена
+                await room_service.handle_message(room, user_id, message)
                 await connection_manager.send_message(room_id, message)
             except (ValueError, ValidationError) as e:
                 await connection_manager.send_message(
