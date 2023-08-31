@@ -15,10 +15,10 @@ class Room(Document):
     film_id: UUID
     creator_id: UUID
     created_at: datetime
-    view_progress: float
+    view_progress: int
     is_paused: bool
     participants: list[UUID]
-    messgess: list[Message] = Field(default_factory=list)
+    messages: list[Message] = Field(default_factory=list)
 
     class Settings:
         name = 'rooms'

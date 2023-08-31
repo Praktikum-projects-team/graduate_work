@@ -12,7 +12,6 @@ class MessageType(str, Enum):
 class PlayerActionType(str, Enum):
     play = 'play'
     pause = 'pause'
-    resume = 'resume'
     skip_next = 'skip_next'
     skip_previous = 'skip_previous'
 
@@ -24,7 +23,7 @@ class BaseMessage(OrjsonBaseModel):
 class PlayerAction(BaseMessage):
     type: MessageType = MessageType.player
     action: PlayerActionType
-    value: float
+    value: int
 
 
 class ChatMessage(BaseMessage):
@@ -39,9 +38,10 @@ class Error(BaseMessage):
 
 def parse_message(json_data: dict):
     type = json_data.get('type')
-    if type == MessageType.player:
-        return PlayerAction(**json_data)
-    elif type == MessageType.text:
-        return ChatMessage(**json_data)
-
-    raise ValueError('Unknown message type')
+    match type:
+        case MessageType.player:
+            return PlayerAction(**json_data)
+        case MessageType.text:
+            return ChatMessage(**json_data)
+        case _:
+            raise ValueError('Unknown message type')
