@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import WebSocket
 from pydantic import ValidationError
 
+from api.v1.auth.auth_bearer import BaseJWTBearer
 from core.models import (
     ChatMessage,
     Error,
@@ -13,19 +14,28 @@ from core.models import (
     parse_message,
 )
 from db import models as db_models
+from services.external import add_notification, get_user_friends
+
+jwt_bearer = BaseJWTBearer()
 
 
 class RoomService:
-    async def create(self, user_id: UUID, film_id: UUID):
+    async def create(self, token: str, film_id: UUID):
+        user_info = jwt_bearer.decode_jwt(token)
+        participants = await get_user_friends(token)
         new_room = db_models.Room(
             film_id=film_id,
-            creator_id=user_id,
+            creator_id=user_info['id'],
             created_at=datetime.now(),
             view_progress=0,
             is_paused=True,
-            participants=[user_id],
+            participants=participants,
         )
         await new_room.insert()  # type: ignore
+
+        # Todo: отладить отправку уведомлений
+        # await add_notification(token=token, data={'user_id': user_info['id'], 'event_id': '???'})
+
         return new_room
 
     async def get(self, room_id: str) -> db_models.Room | None:

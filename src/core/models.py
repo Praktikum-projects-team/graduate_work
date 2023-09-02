@@ -1,6 +1,15 @@
 from enum import Enum
+from http import HTTPStatus
+from typing import Any
+
+from pydantic import BaseModel
 
 from .base_model import OrjsonBaseModel
+
+
+class ApiResponse(BaseModel):
+    status: HTTPStatus
+    body: Any
 
 
 class MessageType(str, Enum):
