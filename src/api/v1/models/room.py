@@ -10,3 +10,14 @@ class RoomReq(OrjsonBaseModel):
 
 class RoomResp(OrjsonBaseModel):
     msg: str
+
+
+class RoomInfoResp(OrjsonBaseModel):
+    id: str
+    created_at: str
+    creator_id: str
+    film_id: str
+    is_paused: bool
+    messages: list[str]
+    participants: list[str]
+    view_progress: int

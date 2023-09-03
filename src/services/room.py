@@ -1,7 +1,9 @@
+import logging
 from datetime import datetime
 from functools import lru_cache
 from uuid import UUID
 
+from bson import ObjectId
 from fastapi import WebSocket
 from pydantic import ValidationError
 
@@ -39,7 +41,15 @@ class RoomService:
         return new_room
 
     async def get(self, room_id: str) -> db_models.Room | None:
-        return await db_models.Room.get(room_id)
+        try:
+            room_info = await db_models.Room.get(room_id)
+            if room_info is None:
+                raise Exception('Room not found')
+            return room_info
+
+        except Exception as e:
+            logging.error(e)
+            return None
 
     async def iter_json(
         self,
