@@ -6,6 +6,7 @@ from fastapi import WebSocket
 from pydantic import ValidationError
 
 from api.v1.auth.auth_bearer import BaseJWTBearer
+from core.constant import EVENT_ID
 from core.models import (
     ChatMessage,
     Error,
@@ -14,7 +15,7 @@ from core.models import (
     parse_message,
 )
 from db import models as db_models
-from services.external import add_notification, get_user_friends
+from services.external import add_notification_admin_for_room, add_notification_service, get_user_friends
 
 jwt_bearer = BaseJWTBearer()
 
@@ -33,8 +34,8 @@ class RoomService:
         )
         await new_room.insert()  # type: ignore
 
-        # Todo: отладить отправку уведомлений
-        # await add_notification(token=token, data={'user_id': user_info['id'], 'event_id': '???'})
+        # EVENT_ID должен быть в базе
+        # await add_notification_service(token=token, data={'user_id': user_info['id'], 'event_id': EVENT_ID})
 
         return new_room
 
