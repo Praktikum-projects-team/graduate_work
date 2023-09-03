@@ -35,8 +35,7 @@ class RoomService:
         )
         await new_room.insert()  # type: ignore
 
-        # INVITATION_EVENT_ID должен быть в базе
-        # await send_notification(token=token, data={'user_id': user_info['id'], 'event_id': INVITATION_EVENT_ID})
+        await send_notification(token=token, data={'user_id': user_info['id'], 'event_id': INVITATION_EVENT_ID})
 
         return new_room
 
