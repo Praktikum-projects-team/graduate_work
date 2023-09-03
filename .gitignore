@@ -160,3 +160,5 @@ cython_debug/
 .idea/
 /rabbitmq/
 /envs/auth/.env
+/envs/friends/.env
+/envs/ugc/.env
