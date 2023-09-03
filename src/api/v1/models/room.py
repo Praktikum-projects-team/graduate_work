@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from core.base_model import OrjsonBaseModel
@@ -10,6 +11,7 @@ class RoomReq(OrjsonBaseModel):
 
 class RoomResp(OrjsonBaseModel):
     msg: str
+    room_id: Optional[str]
 
 
 class RoomInfoResp(OrjsonBaseModel):
