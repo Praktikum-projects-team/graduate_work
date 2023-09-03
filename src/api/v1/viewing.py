@@ -5,6 +5,7 @@ import httpx
 
 from api.v1.auth.auth_bearer import BaseJWTBearer
 from core.config import ugc_config, friends_config
+from core.request import make_get_request
 from services.auth import AuthApi
 
 router = APIRouter()
@@ -20,18 +21,19 @@ async def get_movie_matches(request: Request):
     current_user = request.token_payload
     current_user_id = current_user['id']
     current_user_bookmark_link = f'{ugc_config.url_bookmarks}/{current_user_id}'
-    current_user_bookmarks = httpx.get(url=current_user_bookmark_link).json()
-    matches = {bm: [] for bm in current_user_bookmarks}
+
+    current_user_bookmarks = await make_get_request(url=current_user_bookmark_link)
+    matches = {bm: [] for bm in current_user_bookmarks.body}
 
     friend_link = friends_config.url_friends_list
-    friends = httpx.get(friend_link).json()
+    friends = (await make_get_request(friend_link)).body
 
     for friend in friends['friends']:
         friend_id = friend['id']
         bookmark_link = f'{ugc_config.url_bookmarks}/{friend_id}'
-        response = httpx.get(bookmark_link).json()
-        for bookmark in response:
-            if bookmark in current_user_bookmarks:
-                matches.get(bookmark).append(friend_id)
+        response = await make_get_request(bookmark_link)
+        for bookmark in response.body:
+            if bookmark in matches:
+                matches['bookmark'].append(friend_id)
 
     return matches
