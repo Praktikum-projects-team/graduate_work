@@ -12,7 +12,7 @@ services:
     networks:
       - cinema
     ports:
-      - "5433:5432"
+      - "5432:5432"
 
   auth_redis:
     container_name: auth_redis
@@ -90,7 +90,7 @@ services:
     networks:
       - cinema
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   friends:
     container_name: friends

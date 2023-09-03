@@ -51,10 +51,8 @@ async def add_room(
         token: str = Depends(BaseJWTBearer()),
         room_service: RoomService = Depends(get_room_service)
 ) -> RoomResp:
-    # user_info = jwt_bearer.decode_jwt(token)
     try:
-        # await room_service.create(user_id=user_info['id'], film_id=data.film_id)
-        await room_service.create(token=token, film_id=data.film_id)
+        await room_service.create(token=token, film_id=data.film_id, participants=data.participants)
     except Exception as e:
         logging.error(e)
         return RoomResp(msg='Creating room is failed')
