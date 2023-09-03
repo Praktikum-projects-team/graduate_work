@@ -1,10 +1,14 @@
+import logging
 from datetime import datetime
 from functools import lru_cache
 from uuid import UUID
 
+from bson import ObjectId
 from fastapi import WebSocket
 from pydantic import ValidationError
 
+from api.v1.auth.auth_bearer import BaseJWTBearer
+from core.constant import INVITATION_EVENT_ID
 from core.models import (
     ChatMessage,
     Error,
@@ -13,23 +17,38 @@ from core.models import (
     parse_message,
 )
 from db import models as db_models
+from services.external import send_notification
+
+jwt_bearer = BaseJWTBearer()
 
 
 class RoomService:
-    async def create(self, user_id: UUID, film_id: UUID):
+    async def create(self, token: str, film_id: UUID, participants: list[UUID]):
+        user_info = jwt_bearer.decode_jwt(token)
         new_room = db_models.Room(
             film_id=film_id,
-            creator_id=user_id,
+            creator_id=user_info['id'],
             created_at=datetime.now(),
             view_progress=0,
             is_paused=True,
-            participants=[user_id],
+            participants=participants,
         )
         await new_room.insert()  # type: ignore
+
+        await send_notification(token=token, data={'user_id': user_info['id'], 'event_id': INVITATION_EVENT_ID})
+
         return new_room
 
     async def get(self, room_id: str) -> db_models.Room | None:
-        return await db_models.Room.get(room_id)
+        try:
+            room_info = await db_models.Room.get(room_id)
+            if room_info is None:
+                raise Exception('Room not found')
+            return room_info
+
+        except Exception as e:
+            logging.error(e)
+            return None
 
     async def iter_json(
         self,

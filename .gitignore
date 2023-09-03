@@ -161,4 +161,6 @@ cython_debug/
 /rabbitmq/
 /envs/auth/.env
 /envs/friends/.env
+/envs/notification/.env
+/envs/cron_scheduler/.env
 /envs/ugc/.env
