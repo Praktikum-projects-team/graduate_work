@@ -1,10 +1,12 @@
 import json
 from http import HTTPStatus
+from uuid import UUID, uuid4
 
+import jwt
 from fastapi import HTTPException
 from httpx import AsyncClient
 
-from core.config import AuthConfig
+from core.config import AuthConfig, auth_config
 
 
 class AuthApi:
@@ -18,13 +20,25 @@ class AuthApi:
         async with AsyncClient() as client:
             auth_answer = await client.post(
                 self.token_checking_url,
-                headers={self.auth_header_key: self.token_type + ' ' + token, 'X-Request-Id': self.x_request_id},
+                headers={self.auth_header_key: self.token_type + ' ' + token, 'X-Request-Id': str(uuid4())},
             )
         if auth_answer.status_code == HTTPStatus.OK:
             body = auth_answer.json()
             return json.loads(body)
         if auth_answer.status_code == HTTPStatus.UNAUTHORIZED:
             raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail="Invalid token or expired token.")
+
+    def decode_jwt(self, token: str)-> UUID | None:
+        try:
+            payload = jwt.decode(
+                jwt=token,
+                key=auth_config.jwt_secret,
+                algorithms=[auth_config.jwt_algorithm],
+            )
+            token_payload = json.loads(payload.get('user_info'))
+            return UUID(token_payload['id'])
+        except (KeyError, jwt.PyJWTError):
+            return None
 
 
 def get_auth_api():

@@ -2,16 +2,18 @@ import logging
 from http import HTTPStatus
 
 import uvicorn
+from beanie import init_beanie
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import ORJSONResponse
 from httpx import RequestError
 
-from api.v1 import viewing
-from core.logger import LOGGING
+from api.v1 import room, viewing
 from core.config import app_config
-
-from dotenv import load_dotenv
+from core.logger import LOGGING
+from db.models import Room
+from db.mongo_db import init_db
 
 load_dotenv()
 
@@ -23,6 +25,13 @@ app = FastAPI(
 )
 
 app.include_router(viewing.router, prefix='/api/v1/viewing', tags=['viewing'])
+app.include_router(room.router, prefix='/api/v1/room', tags=['room'])
+
+
+@app.on_event('startup')
+async def startup():
+    db = init_db()
+    await init_beanie(database=db, document_models=[Room])  # type: ignore
 
 
 @app.exception_handler(RequestError)
