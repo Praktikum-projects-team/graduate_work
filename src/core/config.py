@@ -43,6 +43,18 @@ class MongoConfig(BaseSettings):
     mongo_url: str = Field(..., env='MONGO_URL')
 
 
+class FriendsConfig(BaseSettings):
+    host: str = Field(..., env='FRIENDS_HOST')
+    port: int = Field(..., env='FRIENDS_PORT')
+
+
+class NotificationConfig(BaseSettings):
+    host: str = Field(..., env='NOTIFICATION_HOST')
+    port: int = Field(..., env='NOTIFICATION_PORT')
+
+
 app_config = AppConfig()  # type: ignore[call-arg]
 auth_config = AuthConfig()  # type: ignore[call-arg]
 mongo_config = MongoConfig()  # type: ignore[call-arg]
+friends_config = FriendsConfig()  # type: ignore[call-arg]
+notification_config = NotificationConfig()  # type: ignore[call-arg]
