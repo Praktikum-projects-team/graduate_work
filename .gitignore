@@ -164,3 +164,4 @@ cython_debug/
 /envs/notification/.env
 /envs/cron_scheduler/.env
 /envs/ugc/.env
+/tests/.env
