@@ -3,6 +3,7 @@ from datetime import datetime
 from functools import lru_cache
 from uuid import UUID
 
+from bson import ObjectId
 from fastapi import WebSocket
 from pydantic import ValidationError
 
@@ -61,7 +62,7 @@ class RoomService:
 
             setattr(room_info, field, value)
             await room_info.replace()  # type: ignore
-
+            
             return room_info
 
         except Exception as e:

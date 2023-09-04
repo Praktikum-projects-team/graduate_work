@@ -66,7 +66,7 @@ async def add_room(
         logging.error(e)
         return RoomResp(msg='Creating room is failed')
 
-    return RoomResp(msg='Room created')
+    return RoomResp(msg='Room created', room_id=str(room.id))
 
 
 @router.get(
@@ -86,7 +86,7 @@ async def get_room_info(
 
     except Exception as e:
         logging.error(e)
-        return JSONResponse(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, content={'msg': 'Update room info is failed'})
+        return JSONResponse(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, content={'msg': 'Get room info is failed'})
 
     return RoomInfoResp(
         id=str(room_info.id),

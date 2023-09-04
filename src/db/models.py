@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from uuid import UUID
 
@@ -12,6 +13,7 @@ class Message(BaseModel):
 
 
 class Room(Document):
+    id: UUID = Field(default_factory=uuid.uuid4)
     film_id: UUID
     creator_id: UUID
     created_at: datetime
