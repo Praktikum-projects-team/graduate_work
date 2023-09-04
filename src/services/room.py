@@ -23,11 +23,14 @@ jwt_bearer = BaseJWTBearer()
 
 
 class RoomService:
-    async def create(self, token: str, film_id: UUID, participants: list[UUID]):
-        user_info = jwt_bearer.decode_jwt(token)
+
+    class RoomInvitationNotSent(Exception):
+        pass
+
+    async def create(self, user: dict, film_id: UUID, participants: list[UUID], token: str = None):
         new_room = db_models.Room(
             film_id=film_id,
-            creator_id=user_info['id'],
+            creator_id=user['id'],
             created_at=datetime.now(),
             view_progress=0,
             is_paused=True,
@@ -35,7 +38,10 @@ class RoomService:
         )
         await new_room.insert()  # type: ignore
 
-        await send_notification(token=token, data={'user_id': user_info['id'], 'event_id': INVITATION_EVENT_ID})
+        try:
+            await send_notification(token=token, data={'user_id': user['id'], 'event_id': INVITATION_EVENT_ID})
+        except ConnectionError:
+            logging.error('room %s invitations not sent', new_room.id)
 
         return new_room
 

@@ -1,7 +1,7 @@
 import logging
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, status
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, status, Request
 from starlette.responses import JSONResponse
 
 from api.v1.auth.auth_bearer import BaseJWTBearer
@@ -50,15 +50,13 @@ async def room_websoket(
 )
 async def add_room(
         data: RoomReq,
+        request: Request,
         token: str = Depends(BaseJWTBearer()),
         room_service: RoomService = Depends(get_room_service)
 ) -> RoomResp:
-    print('start')
-    try:
-        room = await room_service.create(token=token, film_id=data.film_id, participants=data.participants)
-    except Exception as e:
-        logging.error(e)
-        return RoomResp(msg='Creating room is failed')
+    print('start room creation')
+    user = request.token_payload
+    room = await room_service.create(user, film_id=data.film_id, participants=data.participants, token=token)
 
     return RoomResp(msg='Room created', room_id=str(room.id))
 
@@ -73,14 +71,9 @@ async def get_room_info(
         room_id: str,
         room_service: RoomService = Depends(get_room_service)
 ) -> JSONResponse | RoomResp | RoomInfoResp:
-    try:
-        room_info = await room_service.get(room_id=room_id)
-        if room_info is None:
-            return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
-
-    except Exception as e:
-        logging.error(e)
-        return JSONResponse(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, content={'msg': 'Get room info is failed'})
+    room_info = await room_service.get(room_id=room_id)
+    if not room_info:
+        return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
 
     return RoomInfoResp(
         id=str(room_info.id),
