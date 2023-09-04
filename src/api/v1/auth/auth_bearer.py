@@ -1,14 +1,9 @@
-import json
-import logging
 from http import HTTPStatus
 from typing import Optional
 
-import jwt
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from httpx import ConnectError
 
-from core.config import auth_config
 from services.auth import AuthApi, get_auth_api
 
 
@@ -38,13 +33,6 @@ class BaseJWTBearer(HTTPBearer):
         else:
             raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="Invalid authorization code.")
 
-    def decode_jwt(self, token: str) -> dict:
-        try:
-            payload = jwt.decode(token, auth_config.jwt_secret, algorithms=[auth_config.jwt_algorithm])
-            return json.loads(payload.get('user_info'))
-        except jwt.PyJWTError:
-            return {}
-
     def check_payload(self, jwt_payload):
         """"
         To be overriden if you expect to get certain values from user info (roles, for example)
@@ -52,12 +40,7 @@ class BaseJWTBearer(HTTPBearer):
         return True
 
     async def verify_jwt(self, jwtoken: str, auth_api: AuthApi) -> dict:
-
-        try:
-            current_user = await auth_api.check_token(jwtoken)
-        except ConnectError:
-            logging.exception('auth api connection error')
-            current_user = self.decode_jwt(jwtoken)
+        current_user = await auth_api.get_user(jwtoken)
 
         if not self.check_payload(current_user):
             return {}

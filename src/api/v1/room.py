@@ -1,7 +1,7 @@
 import logging
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, status
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, status, Request
 from starlette.responses import JSONResponse
 
 from api.v1.auth.auth_bearer import BaseJWTBearer
@@ -11,7 +11,8 @@ from api.v1.models.room import (
     RoomMessagesReq,
     RoomIsPausedReq,
     RoomCreateResp,
-    RoomResp, RoomViewProgressReq
+    RoomResp,
+    RoomViewProgressReq
 )
 from services.auth import AuthApi, get_auth_api
 from services.connection_manager import ConnectionManager, get_connection_manager
@@ -32,9 +33,9 @@ async def room_websoket(
     room_service: RoomService = Depends(get_room_service),
 ):
     """Вебсокет комнаты"""
-    await auth_api.check_token(token)
-    user_id = auth_api.decode_jwt(token)
-    if user_id is None:
+    user = await auth_api.get_user(token)
+
+    if not user:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, 'Invalid token')
 
     room = await room_service.get(room_id)
@@ -43,7 +44,7 @@ async def room_websoket(
 
     await connection_manager.connect(room_id, websocket)
     try:
-        async for message in room_service.iter_json(websocket, room, user_id):
+        async for message in room_service.iter_json(websocket, room, user['id']):
             await connection_manager.send_message(room_id, message)
     finally:
         await connection_manager.disconnect(room_id, websocket)
@@ -57,14 +58,12 @@ async def room_websoket(
 )
 async def add_room(
         data: RoomCreateReq,
+        request: Request,
         token: str = Depends(BaseJWTBearer()),
         room_service: RoomService = Depends(get_room_service)
-) -> RoomResp | RoomCreateResp:
-    try:
-        room = await room_service.create(token=token, film_id=data.film_id, participants=data.participants)
-    except Exception as e:
-        logging.error(e)
-        return RoomResp(msg='Creating room is failed')
+) -> RoomCreateResp:
+    user = request.token_payload
+    room = await room_service.create(user, film_id=data.film_id, participants=data.participants, token=token)
 
     return RoomCreateResp(msg='Room created', room_id=str(room.id))
 
@@ -79,14 +78,9 @@ async def get_room_info(
         room_id: str,
         room_service: RoomService = Depends(get_room_service)
 ) -> JSONResponse | RoomCreateResp | RoomInfoResp:
-    try:
-        room_info = await room_service.get(room_id=room_id)
-        if room_info is None:
-            return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
-
-    except Exception as e:
-        logging.error(e)
-        return JSONResponse(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, content={'msg': 'Get room info is failed'})
+    room_info = await room_service.get(room_id=room_id)
+    if not room_info:
+        return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
 
     return RoomInfoResp(
         id=str(room_info.id),
