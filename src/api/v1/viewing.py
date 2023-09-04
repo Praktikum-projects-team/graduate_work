@@ -7,7 +7,6 @@ from api.v1.auth.auth_bearer import BaseJWTBearer
 from core.config import ugc_config, friends_config
 from core.request import make_get_request
 from services.auth import AuthApi
-import requests
 
 router = APIRouter()
 auth_api = AuthApi()

@@ -53,6 +53,7 @@ async def add_room(
         token: str = Depends(BaseJWTBearer()),
         room_service: RoomService = Depends(get_room_service)
 ) -> RoomResp:
+    print('start')
     try:
         room = await room_service.create(token=token, film_id=data.film_id, participants=data.participants)
     except Exception as e:
