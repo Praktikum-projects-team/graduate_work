@@ -46,9 +46,9 @@ class AuthApi:
         except jwt.PyJWTError:
             return {}
 
-    def get_user(self, token):
+    async def get_user(self, token):
         try:
-            return self.check_token(token)
+            return await self.check_token(token)
         except (ConnectError, self.AuthServiceBadStatus):
             logging.exception('auth api connection error')
             return self.decode_jwt(token)
