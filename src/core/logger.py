@@ -4,7 +4,7 @@ import os
 logging_level = os.environ.get('LOGGING_LEVEL')
 
 
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(messages)s'
 LOG_DEFAULT_HANDLERS = ['console', ]
 
 LOGGING = {
@@ -16,7 +16,7 @@ LOGGING = {
         },
         'default': {
             '()': 'uvicorn.logging.DefaultFormatter',
-            'fmt': '%(levelprefix)s %(message)s',
+            'fmt': '%(levelprefix)s %(messages)s',
             'use_colors': None,
         },
         'access': {

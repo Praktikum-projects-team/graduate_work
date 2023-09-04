@@ -1,1 +1,3 @@
-# graduate_work
+# Кино вместе
+
+Документация http://127.0.0.1/api/openapi

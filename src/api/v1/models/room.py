@@ -3,9 +3,21 @@ from uuid import UUID
 from core.base_model import OrjsonBaseModel
 
 
-class RoomReq(OrjsonBaseModel):
+class RoomCreateReq(OrjsonBaseModel):
     film_id: UUID
     participants: list[UUID]
+
+
+class RoomMessagesReq(OrjsonBaseModel):
+    message: str
+
+
+class RoomIsPausedReq(OrjsonBaseModel):
+    is_paused: bool
+
+
+class RoomViewProgressReq(OrjsonBaseModel):
+    view_progress: int
 
 
 class RoomResp(OrjsonBaseModel):
@@ -18,6 +30,6 @@ class RoomInfoResp(OrjsonBaseModel):
     creator_id: str
     film_id: str
     is_paused: bool
-    messages: list[str]
+    messages: list[dict]
     participants: list[str]
     view_progress: int

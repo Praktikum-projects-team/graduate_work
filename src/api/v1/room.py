@@ -5,7 +5,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, status
 from starlette.responses import JSONResponse
 
 from api.v1.auth.auth_bearer import BaseJWTBearer
-from api.v1.models.room import RoomInfoResp, RoomReq, RoomResp
+from api.v1.models.room import (
+    RoomInfoResp,
+    RoomCreateReq,
+    RoomMessagesReq,
+    RoomIsPausedReq,
+    RoomResp,
+    RoomViewProgressReq
+)
 from services.auth import AuthApi, get_auth_api
 from services.connection_manager import ConnectionManager, get_connection_manager
 from services.room import RoomService, get_room_service
@@ -49,7 +56,7 @@ async def room_websoket(
     dependencies=[Depends(BaseJWTBearer())]
 )
 async def add_room(
-        data: RoomReq,
+        data: RoomCreateReq,
         token: str = Depends(BaseJWTBearer()),
         room_service: RoomService = Depends(get_room_service)
 ) -> RoomResp:
@@ -79,7 +86,7 @@ async def get_room_info(
 
     except Exception as e:
         logging.error(e)
-        return JSONResponse(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, content={'msg': 'Get room info is failed'})
+        return JSONResponse(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, content={'msg': 'Update room info is failed'})
 
     return RoomInfoResp(
         id=str(room_info.id),
@@ -91,3 +98,73 @@ async def get_room_info(
         participants=[str(participant) for participant in room_info.participants],
         view_progress=room_info.view_progress
     )
+
+
+@router.patch(
+    '/messages/{room_id}',
+    response_model=RoomResp,
+    description='Отправка сообщения в комнату',
+    dependencies=[Depends(BaseJWTBearer())]
+)
+async def add_message_to_room(
+        room_id: str,
+        data: RoomMessagesReq,
+        token: str = Depends(BaseJWTBearer()),
+        room_service: RoomService = Depends(get_room_service)
+) -> JSONResponse | RoomResp:
+    try:
+        room_info = await room_service.update_messages(token=token, room_id=room_id, message_info=data.dict())
+        if room_info is None:
+            return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
+
+    except Exception as e:
+        logging.error(e)
+        return RoomResp(msg='Send messages to room failed')
+
+    return RoomResp(msg='Message sent successfully')
+
+
+@router.patch(
+    '/is_paused/{room_id}',
+    response_model=RoomResp,
+    description='Приостановка/возобновление просмотра фильма в комнате',
+    dependencies=[Depends(BaseJWTBearer())]
+)
+async def add_message_to_room(
+        room_id: str,
+        data: RoomIsPausedReq,
+        room_service: RoomService = Depends(get_room_service)
+) -> JSONResponse | RoomResp:
+    try:
+        room_info = await room_service.update_is_paused(room_id=room_id, is_paused=data.is_paused)
+        if room_info is None:
+            return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
+
+    except Exception as e:
+        logging.error(e)
+        return RoomResp(msg='Pause state sent failed')
+
+    return RoomResp(msg='Pause state sent successfully')
+
+
+@router.patch(
+    '/view_progress/{room_id}',
+    response_model=RoomResp,
+    description='Отправка прогресса просмотра фильма в комнате',
+    dependencies=[Depends(BaseJWTBearer())]
+)
+async def add_view_progress_to_room(
+        room_id: str,
+        data: RoomViewProgressReq,
+        room_service: RoomService = Depends(get_room_service)
+) -> JSONResponse | RoomResp:
+    try:
+        room_info = await room_service.update_view_progress(room_id=room_id, view_progress=data.view_progress)
+        if room_info is None:
+            return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
+
+    except Exception as e:
+        logging.error(e)
+        return RoomResp(msg='View progress sent failed')
+
+    return RoomResp(msg='View progress sent successfully')
