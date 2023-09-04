@@ -5,8 +5,8 @@ import websockets
 
 from asyncio import sleep
 
-from functional.testdata.users import get_users_data
-from functional.utils.routes import ROOM_URL
+from tests.functional.testdata.users import get_users_data
+from tests.functional.utils.routes import ROOM_URL
 
 pytestmark = pytest.mark.asyncio
 

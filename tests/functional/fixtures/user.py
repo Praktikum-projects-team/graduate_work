@@ -4,7 +4,7 @@ from http import HTTPStatus
 import pytest
 import requests
 
-from functional.testdata.users import get_users_data
+from tests.functional.testdata.users import get_users_data
 from tests.functional.utils.constants import UserData
 from tests.functional.utils.routes import AUTH_URL_LOGIN, AUTH_URL_SIGN_UP
 

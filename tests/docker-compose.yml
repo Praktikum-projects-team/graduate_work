@@ -11,6 +11,8 @@ services:
     restart: always
     networks:
       - cinema
+    ports:
+      - "5432:5432"
 
   auth_redis:
     container_name: auth_redis
@@ -43,8 +45,8 @@ services:
     networks:
       - cinema
 
-  changable_ugc:
-    container_name: changable_ugc
+  feedback:
+    container_name: feedback
     image: ghcr.io/praktikum-projects-team/changable_ugc:latest
     env_file:
       - ../envs/ugc/.env
@@ -70,10 +72,14 @@ services:
     build: .
     env_file:
       - ../envs/cinema_together/.env
+    environment:
+      PYTHONUNBUFFERED: 1
     ports:
       - "8003:8001"
     depends_on:
-      - mongodb
+      - cinema_mongodb
+    networks:
+      - cinema
 
   nginx:
     container_name: nginx
@@ -118,18 +124,18 @@ services:
     networks:
       - cinema
 
-#  rabbitmq:
-#    image: rabbitmq:3.10.7-management
-#    hostname: rabbitmq
-#    restart: always
-#    env_file:
-#      - ../envs/notification/.env
-#    volumes:
-#      - ./rabbitmq:/var/lib/rabbitmq
-#    ports:
-#      - "15672:15672"
-#    networks:
-#      - cinema
+  rabbitmq:
+    image: rabbitmq:3.10.7-management
+    hostname: rabbitmq
+    restart: always
+    env_file:
+      - ../envs/notification/.env
+    volumes:
+      - ./rabbitmq:/var/lib/rabbitmq
+    ports:
+      - "15672:15672"
+    networks:
+      - cinema
 
   notification_postgres:
     container_name: notification_postgres
@@ -181,7 +187,7 @@ services:
     expose:
       - 1025
     ports:
-      - 8025:8025
+      - "8025:8025"
     networks:
       - cinema
 
@@ -194,6 +200,8 @@ services:
       - auth
       - cinema_together
       - mongodb
+      - notification
+      - friends
     networks:
       - cinema
 
