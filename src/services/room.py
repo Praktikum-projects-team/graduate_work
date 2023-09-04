@@ -3,7 +3,6 @@ from datetime import datetime
 from functools import lru_cache
 from uuid import UUID
 
-from bson import ObjectId
 from fastapi import WebSocket
 from pydantic import ValidationError
 
@@ -21,6 +20,10 @@ from db.models import Message
 from services.external import send_notification
 
 jwt_bearer = BaseJWTBearer()
+
+
+class RoomNotFound(Exception):
+    pass
 
 
 class RoomService:
@@ -50,38 +53,39 @@ class RoomService:
         return await db_models.Room.get(room_id)
 
     async def update(self, room_id: str, field: str, value: list | bool | int):
-        try:
-            room_info = await db_models.Room.get(room_id)
-            if room_info is None:
-                raise Exception('Room not found')
+        room_info = await db_models.Room.get(room_id)
+        if room_info is None:
+            raise RoomNotFound('Room not found')
 
-            setattr(room_info, field, value)
-            await room_info.replace()  # type: ignore
-            
+        setattr(room_info, field, value)
+        await room_info.replace()  # type: ignore
+
+        return room_info
+
+    async def update_messages(self, user: dict, room_id: str, message_info: dict):
+        try:
+            message_info.update({'user_id': user['id'], 'created_at': datetime.now()})
+            room_info = await self.update(room_id=room_id, field='messages', value=[Message(**message_info)])
             return room_info
 
-        except Exception as e:
-            logging.error(e)
-
+        except RoomNotFound:
             return None
 
-    async def update_messages(self, token: str, room_id: str, message_info: dict):
-        user_info = jwt_bearer.decode_jwt(token)
-        message_info.update({'user_id': user_info['id'], 'created_at': datetime.now()})
-
-        room_info = await self.update(room_id=room_id, field='messages', value=[Message(**message_info)])
-
-        return room_info
-
     async def update_is_paused(self, room_id: str, is_paused: bool):
-        room_info = await self.update(room_id=room_id, field='is_paused', value=is_paused)
+        try:
+            room_info = await self.update(room_id=room_id, field='is_paused', value=is_paused)
+            return room_info
 
-        return room_info
+        except RoomNotFound:
+            return None
 
     async def update_view_progress(self, room_id: str, view_progress: int):
-        room_info = await self.update(room_id=room_id, field='view_progress', value=view_progress)
+        try:
+            room_info = await self.update(room_id=room_id, field='view_progress', value=view_progress)
+            return room_info
 
-        return room_info
+        except RoomNotFound:
+            return None
 
     async def iter_json(
         self,

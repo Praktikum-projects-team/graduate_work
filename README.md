@@ -10,7 +10,8 @@
 Запуск проекта: `docker-compose up`  
 Запуск тестов: `cd tests & docker-compose up`
 
-Документация http://127.0.0.1/api/openapi
+## Документация 
+http://127.0.0.1/api/openapi
 
 ## Разработка
 * Лиана Нигматуллина - тимлид

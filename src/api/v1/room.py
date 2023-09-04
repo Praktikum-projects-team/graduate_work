@@ -103,17 +103,13 @@ async def get_room_info(
 async def add_message_to_room(
         room_id: str,
         data: RoomMessagesReq,
-        token: str = Depends(BaseJWTBearer()),
+        request: Request,
         room_service: RoomService = Depends(get_room_service)
 ) -> JSONResponse | RoomResp:
-    try:
-        room_info = await room_service.update_messages(token=token, room_id=room_id, message_info=data.dict())
-        if room_info is None:
-            return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
-
-    except Exception as e:
-        logging.error(e)
-        return RoomResp(msg='Send messages to room failed')
+    user = request.token_payload
+    room_info = await room_service.update_messages(user, room_id=room_id, message_info=data.dict())
+    if room_info is None:
+        return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
 
     return RoomResp(msg='Message sent successfully')
 
@@ -129,14 +125,9 @@ async def add_message_to_room(
         data: RoomIsPausedReq,
         room_service: RoomService = Depends(get_room_service)
 ) -> JSONResponse | RoomResp:
-    try:
-        room_info = await room_service.update_is_paused(room_id=room_id, is_paused=data.is_paused)
-        if room_info is None:
-            return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
-
-    except Exception as e:
-        logging.error(e)
-        return RoomResp(msg='Pause state sent failed')
+    room_info = await room_service.update_is_paused(room_id=room_id, is_paused=data.is_paused)
+    if room_info is None:
+        return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
 
     return RoomResp(msg='Pause state sent successfully')
 
@@ -152,13 +143,8 @@ async def add_view_progress_to_room(
         data: RoomViewProgressReq,
         room_service: RoomService = Depends(get_room_service)
 ) -> JSONResponse | RoomResp:
-    try:
-        room_info = await room_service.update_view_progress(room_id=room_id, view_progress=data.view_progress)
-        if room_info is None:
-            return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
-
-    except Exception as e:
-        logging.error(e)
-        return RoomResp(msg='View progress sent failed')
+    room_info = await room_service.update_view_progress(room_id=room_id, view_progress=data.view_progress)
+    if room_info is None:
+        return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
 
     return RoomResp(msg='View progress sent successfully')
