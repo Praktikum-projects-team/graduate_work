@@ -6,7 +6,7 @@ from core.models import ApiResponse
 
 
 async def make_get_request(url: str, query_data: dict = None, token: str = None):
-    headers = {'X-Request-Id': uuid.uuid4()}
+    headers = {'X-Request-Id': str(uuid.uuid4())}
     if token:
         headers['Authorization'] = f'Bearer {token}'
     async with aiohttp.ClientSession() as session:

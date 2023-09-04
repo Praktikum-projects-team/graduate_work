@@ -49,7 +49,7 @@ class FriendsConfig(BaseSettings):
 
     @property
     def url_friends_list(self):
-        return f'{self.host}:{self.port}/api/v1/friends'
+        return f'http://{self.host}:{self.port}/api/v1/friends'
 
 
 class NotificationConfig(BaseSettings):

@@ -21,7 +21,7 @@ class TestWS:
         message = {'type': 'text', 'content': "Всем привет!"}
         await ws1.send(json.dumps(message))
         msg_rsv_2 = await ws2.recv()
-        msg_rsv_3 = await ws2.recv()
+        msg_rsv_3 = await ws3.recv()
 
         assert message == msg_rsv_2, 'Wrong message'
         assert message == msg_rsv_3, 'Wrong message'

@@ -45,43 +45,13 @@ services:
     networks:
       - cinema
 
-  changable_ugc:
-    container_name: changable_ugc
+  feedback:
+    container_name: feedback
     image: ghcr.io/praktikum-projects-team/changable_ugc:latest
     env_file:
       - envs/ugc/.env
     ports:
       - "8001:8001"
-    networks:
-      - cinema
-
-  friends_postgres:
-    container_name: friends_postgres
-    image: "postgres:13"
-    env_file:
-      - envs/friends/.env
-    volumes:
-      - $HOME/postgresql/friends_data:/var/lib/postgresql/friends_api_data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U app -d friends_db" ]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    restart: always
-    networks:
-      - cinema
-    ports:
-      - "5432:5432"
-
-  friends:
-    container_name: friends
-    image: ghcr.io/praktikum-projects-team/friends_service:0.1.1
-    env_file:
-      - envs/friends/.env
-    depends_on:
-      - friends_postgres
-    ports:
-      - "8002:8001"
     networks:
       - cinema
 
@@ -191,7 +161,7 @@ services:
     depends_on:
       - notification_postgres
     ports:
-      - "8003:8001"
+      - "8004:8001"
     networks:
       - cinema
 
@@ -215,7 +185,7 @@ services:
     expose:
       - 1025
     ports:
-      - 8025:8025
+      - "8025:8025"
     networks:
       - cinema
 

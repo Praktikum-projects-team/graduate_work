@@ -6,7 +6,7 @@ import asyncio
 from functional.testdata.users import get_users_data
 from functional.utils.routes import ROOM_URL
 
-pytest_plugins = ( 'tests.functional.fixtures.user', 'tests.functional.fixtures.request')
+pytest_plugins = ('tests.functional.fixtures.user', 'tests.functional.fixtures.request')
 
 
 @pytest.fixture(scope="session")
