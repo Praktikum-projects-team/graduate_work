@@ -53,4 +53,4 @@ def parse_message(json_data: dict):
         case MessageType.text:
             return ChatMessage(**json_data)
         case _:
-            raise ValueError('Unknown messages type')
+            raise ValueError('Unknown message type')
