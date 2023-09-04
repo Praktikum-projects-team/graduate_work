@@ -161,7 +161,7 @@ services:
     depends_on:
       - notification_postgres
     ports:
-      - "8003:8001"
+      - "8004:8001"
     networks:
       - cinema
 
@@ -185,7 +185,7 @@ services:
     expose:
       - 1025
     ports:
-      - 8025:8025
+      - "8025:8025"
     networks:
       - cinema
 
