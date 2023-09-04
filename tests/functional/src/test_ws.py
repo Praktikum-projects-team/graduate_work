@@ -5,8 +5,8 @@ import websockets
 
 from asyncio import sleep
 
-from functional.testdata.users import get_users_data
-from functional.utils.routes import ROOM_URL
+from tests.functional.testdata.users import get_users_data
+from tests.functional.utils.routes import ROOM_URL
 
 pytestmark = pytest.mark.asyncio
 
@@ -21,7 +21,7 @@ class TestWS:
         message = {'type': 'text', 'content': "Всем привет!"}
         await ws1.send(json.dumps(message))
         msg_rsv_2 = await ws2.recv()
-        msg_rsv_3 = await ws2.recv()
+        msg_rsv_3 = await ws3.recv()
 
         assert message == msg_rsv_2, 'Wrong message'
         assert message == msg_rsv_3, 'Wrong message'

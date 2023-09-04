@@ -8,4 +8,4 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
 
-CMD  wait-for-it -s "${AUTH_HOST}" --timeout 60 && pytest -s /tests/functional/src
+CMD  wait-for-it -s "${APP_HOST}:${APP_PORT}" && pytest -s /tests/functional/src

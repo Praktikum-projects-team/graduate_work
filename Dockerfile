@@ -9,4 +9,4 @@ RUN pip install --upgrade pip \
 
 COPY ./src .
 
-CMD wait-for-it -s "${MONGO_HOST}:${MONGO_PORT}" --timeout 60 && gunicorn main:app -w ${UVICORN_WORKERS} --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8002
+CMD wait-for-it -s "${MONGO_HOST}:${MONGO_PORT}" --timeout 60 && gunicorn main:app -w ${UVICORN_WORKERS} --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8001
