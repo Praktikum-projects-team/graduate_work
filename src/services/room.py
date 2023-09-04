@@ -52,40 +52,16 @@ class RoomService:
     async def get(self, room_id: str) -> db_models.Room | None:
         return await db_models.Room.get(room_id)
 
-    async def update(self, room_id: str, field: str, value: list | bool | int):
+    async def update(self, room_id: str, participant: UUID):
         room_info = await db_models.Room.get(room_id)
         if room_info is None:
             raise RoomNotFound('Room not found')
 
-        setattr(room_info, field, value)
+        new_participants = room_info.participants + [participant]
+        room_info.participants = new_participants
         await room_info.replace()  # type: ignore
 
         return room_info
-
-    async def update_messages(self, user: dict, room_id: str, message_info: dict):
-        try:
-            message_info.update({'user_id': user['id'], 'created_at': datetime.now()})
-            room_info = await self.update(room_id=room_id, field='messages', value=[Message(**message_info)])
-            return room_info
-
-        except RoomNotFound:
-            return None
-
-    async def update_is_paused(self, room_id: str, is_paused: bool):
-        try:
-            room_info = await self.update(room_id=room_id, field='is_paused', value=is_paused)
-            return room_info
-
-        except RoomNotFound:
-            return None
-
-    async def update_view_progress(self, room_id: str, view_progress: int):
-        try:
-            room_info = await self.update(room_id=room_id, field='view_progress', value=view_progress)
-            return room_info
-
-        except RoomNotFound:
-            return None
 
     async def iter_json(
         self,

@@ -1,4 +1,3 @@
-import logging
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, status, Request
@@ -8,15 +7,13 @@ from api.v1.auth.auth_bearer import BaseJWTBearer
 from api.v1.models.room import (
     RoomInfoResp,
     RoomCreateReq,
-    RoomMessagesReq,
-    RoomIsPausedReq,
+    RoomUpdateParticipantsReq,
     RoomCreateResp,
     RoomResp,
-    RoomViewProgressReq
 )
 from services.auth import AuthApi, get_auth_api
 from services.connection_manager import ConnectionManager, get_connection_manager
-from services.room import RoomService, get_room_service
+from services.room import RoomNotFound, RoomService, get_room_service
 
 router = APIRouter()
 auth_api = AuthApi()
@@ -95,56 +92,19 @@ async def get_room_info(
 
 
 @router.patch(
-    '/messages/{room_id}',
+    '/{room_id}',
     response_model=RoomResp,
-    description='Отправка сообщения в комнату',
+    description='Добавить участника в комнату',
     dependencies=[Depends(BaseJWTBearer())]
 )
-async def add_message_to_room(
+async def update_participants_room(
         room_id: str,
-        data: RoomMessagesReq,
-        request: Request,
+        data: RoomUpdateParticipantsReq,
         room_service: RoomService = Depends(get_room_service)
 ) -> JSONResponse | RoomResp:
-    user = request.token_payload
-    room_info = await room_service.update_messages(user, room_id=room_id, message_info=data.dict())
-    if room_info is None:
+    try:
+        await room_service.update(room_id=room_id, participant=data.participant)
+    except RoomNotFound:
         return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
 
-    return RoomResp(msg='Message sent successfully')
-
-
-@router.patch(
-    '/is_paused/{room_id}',
-    response_model=RoomResp,
-    description='Приостановка/возобновление просмотра фильма в комнате',
-    dependencies=[Depends(BaseJWTBearer())]
-)
-async def add_message_to_room(
-        room_id: str,
-        data: RoomIsPausedReq,
-        room_service: RoomService = Depends(get_room_service)
-) -> JSONResponse | RoomResp:
-    room_info = await room_service.update_is_paused(room_id=room_id, is_paused=data.is_paused)
-    if room_info is None:
-        return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
-
-    return RoomResp(msg='Pause state sent successfully')
-
-
-@router.patch(
-    '/view_progress/{room_id}',
-    response_model=RoomResp,
-    description='Отправка прогресса просмотра фильма в комнате',
-    dependencies=[Depends(BaseJWTBearer())]
-)
-async def add_view_progress_to_room(
-        room_id: str,
-        data: RoomViewProgressReq,
-        room_service: RoomService = Depends(get_room_service)
-) -> JSONResponse | RoomResp:
-    room_info = await room_service.update_view_progress(room_id=room_id, view_progress=data.view_progress)
-    if room_info is None:
-        return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
-
-    return RoomResp(msg='View progress sent successfully')
+    return RoomResp(msg='Participants update successfully')

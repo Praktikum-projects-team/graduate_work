@@ -9,16 +9,8 @@ class RoomCreateReq(OrjsonBaseModel):
     participants: list[UUID]
 
 
-class RoomMessagesReq(OrjsonBaseModel):
-    message: str
-
-
-class RoomIsPausedReq(OrjsonBaseModel):
-    is_paused: bool
-
-
-class RoomViewProgressReq(OrjsonBaseModel):
-    view_progress: int
+class RoomUpdateParticipantsReq(OrjsonBaseModel):
+    participant: UUID
 
 
 class RoomCreateResp(OrjsonBaseModel):
