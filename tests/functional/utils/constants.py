@@ -10,5 +10,3 @@ class UserData:
     LOGIN = "test@test.ru"
     PASSWORD = "123qwe"
     NAME = "test_user"
-
-

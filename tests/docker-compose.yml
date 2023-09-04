@@ -175,5 +175,3 @@ services:
 
 volumes:
   mo_data:
-
-
