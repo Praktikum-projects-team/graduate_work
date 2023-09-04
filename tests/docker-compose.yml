@@ -9,8 +9,6 @@ services:
     volumes:
       - $HOME/postgresql/auth_data:/var/lib/postgresql/auth_api_data
     restart: always
-    networks:
-      - cinema
     ports:
       - "5432:5432"
 
@@ -21,8 +19,6 @@ services:
       - ../envs/auth/.env
     volumes:
       - $HOME/redis/data:/var/lib/redis/data
-    networks:
-      - cinema
 
   auth:
     container_name: auth
@@ -34,16 +30,12 @@ services:
       - auth_postgres
     ports:
       - "8000:8000"
-    networks:
-      - cinema
 
   mongodb:
     container_name: mongodb
     image: mongo:4.4.6
     volumes:
       - mo_data:/mo_data
-    networks:
-      - cinema
 
   feedback:
     container_name: feedback
@@ -52,8 +44,6 @@ services:
       - ../envs/ugc/.env
     ports:
       - "8001:8001"
-    networks:
-      - cinema
 
   cinema_mongodb:
     container_name: cinema_mongodb
@@ -64,22 +54,16 @@ services:
       - "27018:27017"
     volumes:
       - mo_data:/mo_data
-    networks:
-      - cinema
 
   cinema_together:
     container_name: cinema_together
-    build: .
+    build: ..
     env_file:
-      - ../envs/cinema_together/.env
-    environment:
-      PYTHONUNBUFFERED: 1
+      - .env
     ports:
       - "8003:8001"
     depends_on:
       - cinema_mongodb
-    networks:
-      - cinema
 
   nginx:
     container_name: nginx
@@ -91,8 +75,6 @@ services:
       - cinema_together
     ports:
       - "80:80"
-    networks:
-      - cinema
 
   friends_postgres:
     container_name: friends_postgres
@@ -107,8 +89,6 @@ services:
       timeout: 3s
       retries: 3
     restart: always
-    networks:
-      - cinema
     ports:
       - "5433:5432"
 
@@ -121,8 +101,6 @@ services:
       - friends_postgres
     ports:
       - "8002:8001"
-    networks:
-      - cinema
 
   rabbitmq:
     image: rabbitmq:3.10.7-management
@@ -134,8 +112,6 @@ services:
       - ./rabbitmq:/var/lib/rabbitmq
     ports:
       - "15672:15672"
-    networks:
-      - cinema
 
   notification_postgres:
     container_name: notification_postgres
@@ -150,8 +126,6 @@ services:
       timeout: 3s
       retries: 3
     restart: always
-    networks:
-      - cinema
     ports:
       - "5434:5432"
 
@@ -161,11 +135,9 @@ services:
     env_file:
       - ../envs/notification/.env
     depends_on:
-      - notification_postgres
+      - notification_worker
     ports:
       - "8004:8001"
-    networks:
-      - cinema
 
   notification_worker:
     container_name: notification_worker
@@ -176,8 +148,6 @@ services:
     depends_on:
       notification_postgres:
         condition: service_healthy
-    networks:
-      - cinema
 
   mailhog:
     container_name: mailhog
@@ -188,27 +158,22 @@ services:
       - 1025
     ports:
       - "8025:8025"
-    networks:
-      - cinema
 
   tests:
     container_name: tests
     build: .
     env_file:
       - .env
+    environment:
+      PYTHONUNBUFFERED: 1
     depends_on:
       - auth
       - cinema_together
-      - mongodb
-      - notification
       - friends
-    networks:
-      - cinema
+      - notification
+      - notification_worker
 
 volumes:
   mo_data:
 
-networks:
-  cinema:
-    name: cinema
 
