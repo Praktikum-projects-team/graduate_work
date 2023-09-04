@@ -10,8 +10,8 @@ from api.v1.models.room import (
     RoomCreateReq,
     RoomMessagesReq,
     RoomIsPausedReq,
-    RoomResp,
-    RoomViewProgressReq
+    RoomCreateResp,
+    RoomResp, RoomViewProgressReq
 )
 from services.auth import AuthApi, get_auth_api
 from services.connection_manager import ConnectionManager, get_connection_manager
@@ -51,7 +51,7 @@ async def room_websoket(
 
 @router.post(
     '/',
-    response_model=RoomResp,
+    response_model=RoomCreateResp,
     description='Создание комнаты',
     dependencies=[Depends(BaseJWTBearer())]
 )
@@ -59,14 +59,14 @@ async def add_room(
         data: RoomCreateReq,
         token: str = Depends(BaseJWTBearer()),
         room_service: RoomService = Depends(get_room_service)
-) -> RoomResp:
+) -> RoomResp | RoomCreateResp:
     try:
-        await room_service.create(token=token, film_id=data.film_id, participants=data.participants)
+        room = await room_service.create(token=token, film_id=data.film_id, participants=data.participants)
     except Exception as e:
         logging.error(e)
         return RoomResp(msg='Creating room is failed')
 
-    return RoomResp(msg='Room created', room_id=str(room.id))
+    return RoomCreateResp(msg='Room created', room_id=str(room.id))
 
 
 @router.get(
@@ -78,7 +78,7 @@ async def add_room(
 async def get_room_info(
         room_id: str,
         room_service: RoomService = Depends(get_room_service)
-) -> JSONResponse | RoomResp | RoomInfoResp:
+) -> JSONResponse | RoomCreateResp | RoomInfoResp:
     try:
         room_info = await room_service.get(room_id=room_id)
         if room_info is None:

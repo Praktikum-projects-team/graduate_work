@@ -21,9 +21,13 @@ class RoomViewProgressReq(OrjsonBaseModel):
     view_progress: int
 
 
-class RoomResp(OrjsonBaseModel):
+class RoomCreateResp(OrjsonBaseModel):
     msg: str
     room_id: Optional[str]
+
+
+class RoomResp(OrjsonBaseModel):
+    msg: str
 
 
 class RoomInfoResp(OrjsonBaseModel):
