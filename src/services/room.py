@@ -40,15 +40,7 @@ class RoomService:
         return new_room
 
     async def get(self, room_id: str) -> db_models.Room | None:
-        try:
-            room_info = await db_models.Room.get(room_id)
-            if room_info is None:
-                raise Exception('Room not found')
-            return room_info
-
-        except Exception as e:
-            logging.error(e)
-            return None
+        return await db_models.Room.get(room_id)
 
     async def iter_json(
         self,
