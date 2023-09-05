@@ -21,7 +21,7 @@ class AuthApi:
         pass
 
     async def check_token(self, token):
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=None) as client:
             auth_answer = await client.post(
                 self.token_checking_url,
                 headers={self.auth_header_key: self.token_type + ' ' + token, 'X-Request-Id': str(uuid4())},
@@ -46,7 +46,7 @@ class AuthApi:
         except jwt.PyJWTError:
             return {}
 
-    def get_user(self, token):
+    async def get_user(self, token):
         try:
             return await self.check_token(token)
         except (ConnectError, self.AuthServiceBadStatus):

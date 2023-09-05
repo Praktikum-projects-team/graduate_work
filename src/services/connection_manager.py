@@ -1,11 +1,11 @@
 from collections import defaultdict
+from functools import lru_cache
 
 from fastapi import WebSocket
 from pydantic import BaseModel
 
 
 class ConnectionManager:
-
     class RoomConnectionNotFound(Exception):
         pass
 
@@ -30,8 +30,6 @@ class ConnectionManager:
             raise self.RoomConnectionNotFound() from e
 
 
-_connection_manager = ConnectionManager()
-
-
+@lru_cache
 def get_connection_manager():
-    return _connection_manager
+    return ConnectionManager()
