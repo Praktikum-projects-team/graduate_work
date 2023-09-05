@@ -1,14 +1,19 @@
-import logging
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, status, Request
 from starlette.responses import JSONResponse
 
 from api.v1.auth.auth_bearer import BaseJWTBearer
-from api.v1.models.room import RoomInfoResp, RoomReq, RoomResp
+from api.v1.models.room import (
+    RoomInfoResp,
+    RoomCreateReq,
+    RoomUpdateParticipantsReq,
+    RoomCreateResp,
+    RoomResp,
+)
 from services.auth import AuthApi, get_auth_api
 from services.connection_manager import ConnectionManager, get_connection_manager
-from services.room import RoomService, get_room_service
+from services.room import RoomNotFound, RoomService, get_room_service
 
 router = APIRouter()
 auth_api = AuthApi()
@@ -44,21 +49,20 @@ async def room_websoket(
 
 @router.post(
     '/',
-    response_model=RoomResp,
+    response_model=RoomCreateResp,
     description='Создание комнаты',
     dependencies=[Depends(BaseJWTBearer())]
 )
 async def add_room(
-        data: RoomReq,
+        data: RoomCreateReq,
         request: Request,
         token: str = Depends(BaseJWTBearer()),
         room_service: RoomService = Depends(get_room_service)
-) -> RoomResp:
-    print('start room creation')
+) -> RoomCreateResp:
     user = request.token_payload
     room = await room_service.create(user, film_id=data.film_id, participants=data.participants, token=token)
 
-    return RoomResp(msg='Room created', room_id=str(room.id))
+    return RoomCreateResp(msg='Room created', room_id=str(room.id))
 
 
 @router.get(
@@ -70,7 +74,7 @@ async def add_room(
 async def get_room_info(
         room_id: str,
         room_service: RoomService = Depends(get_room_service)
-) -> JSONResponse | RoomResp | RoomInfoResp:
+) -> JSONResponse | RoomCreateResp | RoomInfoResp:
     room_info = await room_service.get(room_id=room_id)
     if not room_info:
         return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
@@ -85,3 +89,22 @@ async def get_room_info(
         participants=[str(participant) for participant in room_info.participants],
         view_progress=room_info.view_progress
     )
+
+
+@router.patch(
+    '/{room_id}',
+    response_model=RoomResp,
+    description='Добавить участника в комнату',
+    dependencies=[Depends(BaseJWTBearer())]
+)
+async def update_participants_room(
+        room_id: str,
+        data: RoomUpdateParticipantsReq,
+        room_service: RoomService = Depends(get_room_service)
+) -> JSONResponse | RoomResp:
+    try:
+        await room_service.update(room_id=room_id, participant=data.participant)
+    except RoomNotFound:
+        return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'msg': 'Room not found'})
+
+    return RoomResp(msg='Participants update successfully')

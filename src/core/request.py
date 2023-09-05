@@ -1,5 +1,4 @@
 import uuid
-
 import aiohttp
 
 from core.models import ApiResponse

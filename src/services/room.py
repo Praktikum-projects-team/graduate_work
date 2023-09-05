@@ -3,7 +3,6 @@ from datetime import datetime
 from functools import lru_cache
 from uuid import UUID
 
-from bson import ObjectId
 from fastapi import WebSocket
 from pydantic import ValidationError
 
@@ -17,9 +16,14 @@ from core.models import (
     parse_message,
 )
 from db import models as db_models
+from db.models import Message
 from services.external import send_notification
 
 jwt_bearer = BaseJWTBearer()
+
+
+class RoomNotFound(Exception):
+    pass
 
 
 class RoomService:
@@ -47,6 +51,17 @@ class RoomService:
 
     async def get(self, room_id: str) -> db_models.Room | None:
         return await db_models.Room.get(room_id)
+
+    async def update(self, room_id: str, participant: UUID):
+        room_info = await db_models.Room.get(room_id)
+        if room_info is None:
+            raise RoomNotFound('Room not found')
+
+        new_participants = room_info.participants + [participant]
+        room_info.participants = new_participants
+        await room_info.replace()  # type: ignore
+
+        return room_info
 
     async def iter_json(
         self,

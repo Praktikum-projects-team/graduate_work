@@ -41,6 +41,3 @@ class TestWS:
 
         assert message == msg_rsv_1, 'Wrong message'
         assert message == msg_rsv_3, 'Wrong message'
-
-
-

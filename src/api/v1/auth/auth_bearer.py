@@ -1,14 +1,9 @@
-import json
-import logging
 from http import HTTPStatus
 from typing import Optional
 
-import jwt
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from httpx import ConnectError
 
-from core.config import auth_config
 from services.auth import AuthApi, get_auth_api
 
 
