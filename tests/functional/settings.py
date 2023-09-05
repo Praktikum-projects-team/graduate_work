@@ -13,6 +13,7 @@ class TestSettings(BaseSettings):
     jwt_algorithm: str = Field(..., env='JWT_ALGORITHM')
     friends_host: str = Field(..., env='FRIENDS_HOST')
     friends_port: int = Field(..., env='FRIENDS_PORT')
+    ugc_host: str = Field(..., env='UGC_HOST')
 
     # Для локального запуска тестов
     class Config:
