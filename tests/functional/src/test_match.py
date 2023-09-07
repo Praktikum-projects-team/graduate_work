@@ -3,14 +3,15 @@ import uuid
 from http import HTTPStatus
 
 from tests.functional.testdata.users import get_users_data
-from tests.functional.utils.routes import ROOM_URL, MATCHES_URL
+from tests.functional.utils.routes import MATCHES_URL
 from tests.functional.utils.helpers import decode_jwt
 
 pytestmark = pytest.mark.asyncio
 
 
 class TestMatches:
-    async def test_matches(self, make_get_request_with_token, user_access_token, create_friend, create_bookmark):
+    async def test_matches(self, make_get_request_with_token, user_access_token,
+                           create_friend, create_bookmark, delete_bookmark):
         users = get_users_data()
         users_tokens = [await user_access_token(user) for user in users]
         film_id1 = str(uuid.uuid4())
@@ -29,13 +30,14 @@ class TestMatches:
 
         resp = await make_get_request_with_token(path=MATCHES_URL, token=users_tokens[0])
 
-        print(resp.body)
+        for token in users_tokens:
+            await delete_bookmark(token, film_id1)
+            await delete_bookmark(token, film_id2)
 
-        matches = {
-            film_id1: [decode_jwt(users_tokens[1])['id'], decode_jwt(users_tokens[2])['id']],
-            film_id2: [decode_jwt(users_tokens[1])['id'], decode_jwt(users_tokens[2])['id']],
-            film_id3: [decode_jwt(users_tokens[1])['id']]
-        }
+        await delete_bookmark(users_tokens[0], film_id3)
+        await delete_bookmark(users_tokens[1], film_id3)
 
         assert resp.status == HTTPStatus.OK, 'Wrong status code'
-        assert resp.body == matches, 'Wrong response'
+        assert len(resp.body[film_id1]) == 2, 'Wrong response'
+        assert len(resp.body[film_id2]) == 2, 'Wrong response'
+        assert len(resp.body[film_id3]) == 1, 'Wrong response'

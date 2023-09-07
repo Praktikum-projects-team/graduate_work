@@ -2,7 +2,6 @@ import logging
 from http import HTTPStatus
 
 import pytest
-import requests
 import uuid
 
 from tests.functional.testdata.users import get_users_data
@@ -24,5 +23,6 @@ async def create_room(user_access_token, make_post_request):
         return room_resp.body['room_id'], users_tokens[0]
 
     return inner
+
 
 
